@@ -20,7 +20,7 @@ class HardwareControl
 {
 public:
     HardwareControl();
-    bool Initialize(string p_directory, string p_power, string p_battery);
+    bool Initialize(string p_power, string p_battery);
 
 public:
     void StartPowerMonitor();

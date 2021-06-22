@@ -2,7 +2,7 @@
 #include <yaml-cpp/yaml.h>
 #include <signal.h>
 #include "hardwarecontrol.h"
-
+#include <vector>
 using namespace std;
 
 HardwareControl m_hardwareControl;
@@ -14,10 +14,10 @@ void signal_callback_handler(int signum) {
    //exit(signum);
 }
 
-int main()
+int main(int argc, char **argv)
 {
 
-    string directory,battery,power;
+    string battery,power;
     bool initialize = false;
     //catch signal
     signal(SIGINT, signal_callback_handler);
@@ -27,23 +27,50 @@ int main()
     signal(SIGKILL, signal_callback_handler);
 
     vector <int> exclude;
-    try
-    {
-        YAML_CPP_API::YAML::Node m_config = YAML_CPP_API::YAML::LoadFile("tcd_config.yaml");
-        directory = m_config["Directory_Profile"].as<std::string>();
-        battery = m_config["Profile_Battery"].as<std::string>();
-        power = m_config["Profile_Power"].as<std::string>();
 
-        m_config=NULL;
+    vector<string> args(argv + 1, argv + argc);
+    if (argc > 1) {
+        for (auto i = args.begin(); i != args.end(); ++i) {
+            if (*i == "-h" || *i == "--help") {
+                cout << "usage: TCD_COMMUNITY -p power_profile.yaml -b battery_profile.yaml\n" << endl;
+                cout << "-h, --help            : Print this help message and exit" << endl;
+                cout << "-p, --power_profile   : Path to the power profile" << endl;
+                cout << "-b, --battery_profile : Path to the battery profile" << endl;
+                return 0;
+
+            } else if (*i == "-p" || *i == "--power_profile") {
+                power = *++i;
+
+            } else if (*i == "-b" || *i == "--battery_profile") {
+                battery = *++i;
+            }
+        }
+
+        if (power.empty()) {
+            cout << "No power profile set!" << endl;
+            return 0;
+        } else if ( access( power.c_str(), F_OK ) != 0 ) {
+            cout << "Could not find power profile: " << power << endl;
+            return 0;
+            }
+
+        if (battery.empty()) {
+            cout << "No battery profile set!" << endl;
+            return 0;
+        } else if ( access( battery.c_str(), F_OK ) != 0 ) {
+                cout << "Could not find battery profile: " << battery << endl;
+                return 0;
+            }
+
     }
-    catch ( const YAML::Exception ex)
-   {
-       cout<<"Error: "<<ex.what()<<endl;
-       cout<<"Check tcd_config.yaml File!!!!" <<endl;
-       return 9;
-   }
 
-    initialize=m_hardwareControl.Initialize(directory,power,battery);
+    else {
+        cout << "A Power and Battery profile is required!" << endl;
+        cout << "Check -h or --help for usage." << endl;
+        return 0;
+    }
+
+    initialize=m_hardwareControl.Initialize(power,battery);
     if (initialize)
     {
         m_hardwareControl.StartPowerMonitor();

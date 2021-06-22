@@ -171,38 +171,12 @@ HardwareProfile HardwareControl::LoadProfile(string p_profile)
     return r_profile;
 }
 
-bool HardwareControl::Initialize(string p_directory, string p_power, string p_battery)
+bool HardwareControl::Initialize(string p_power, string p_battery)
 {
     bool r_initialize_correct=true;
     //Get the number of the fan
     m_io.GetNumberFans(m_nbFan);
     cout<<"Number of Fan: "<<m_nbFan<<endl;
-
-    //Yaml could only open a file that is in pwd dir, so change to the directory you want.
-    char cwd[PATH_MAX];
-    string previousWD;
-    string newWD;
-    previousWD=getcwd(cwd, sizeof (cwd));
-
-    //if does not begin by / we start from the current pwd
-    if (p_directory.at(1) != '/')
-    {
-        newWD=previousWD;
-        //cout<<"PWD: "<<previousWD<<endl;
-        newWD.append("/");
-        newWD.append(p_directory);
-        //cout<<"TMP: "<<newWD<<endl;
-        chdir(newWD.c_str());
-        //cout<<"PWD: "<<getcwd(cwd, sizeof (cwd))<<endl;
-    }
-    else
-    {
-        //cout<<"PWD: "<<previousWD<<endl;
-        newWD=p_directory;
-        //cout<<"TMP: "<<newWD<<endl;
-        chdir(newWD.c_str());
-        //cout<<"PWD: "<<getcwd(cwd, sizeof (cwd))<<endl;
-    }
 
 
     //Power
@@ -256,7 +230,7 @@ bool HardwareControl::Initialize(string p_directory, string p_power, string p_ba
     }
 
     //return to default directory
-    chdir(previousWD.c_str());
+    //chdir(previousWD.c_str());
     //cout<<"PWD: "<<getcwd(cwd, sizeof (cwd))<<endl;
     return r_initialize_correct;
 }
